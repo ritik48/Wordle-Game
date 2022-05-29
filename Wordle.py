@@ -55,8 +55,12 @@ class Wordle:
             row_btn = []
             self.button_frames[i].pack(pady=4)
             for j in range(5):
-                b = tk.Button(self.button_frames[i],text="", fg="white",bd=2, font="lucida 18", bg=bg, width=3, height=1)
-                b.pack(side="left",padx=2)
+
+                container = tk.Frame(self.button_frames[i], highlightbackground = "#b0b0b0",highlightthickness = 1, bd=0)
+                container.pack(side="left",padx=4)
+
+                b = tk.Button(container,text="",relief="flat", fg="white",bd=2, font="lucida 18", bg=bg, width=3, height=1)
+                b.pack()
 
                 row_btn.append(b)
 
