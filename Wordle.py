@@ -1,5 +1,5 @@
 import tkinter as tk
-from PIL import Image,ImageTk
+from PIL import Image, ImageTk
 import ctypes
 
 ctypes.windll.shcore.SetProcessDpiAwareness(1)
@@ -7,46 +7,60 @@ ctypes.windll.shcore.SetProcessDpiAwareness(1)
 
 class Wordle:
     FIRST_RIGHT = 10
+    BG = "#171717"
+    MAX_SCORE = 12
 
     def __init__(self):
-        self.root=tk.Tk()
+        self.root = tk.Tk()
         self.root.geometry("600x800+400+150")
-        bg = "#171717"
+
         # bg="white"
-        self.root.configure(background=bg)
+        self.root.configure(background=self.BG)
 
         self.word = "NEONS"
         self.guess = ""
         self.won = False
-
-
-
         self.guess_count = 0
 
+        self.score = 0
 
+        self.setting = Image.open('images/setting.png')
+        self.setting = self.setting.resize((40, 40), Image.Resampling.LANCZOS)
+        self.setting = ImageTk.PhotoImage(self.setting)
 
+        self.setting_dark = Image.open('images/setting_dark.png')
+        self.setting_dark = self.setting_dark.resize((40, 40), Image.Resampling.LANCZOS)
+        self.setting_dark = ImageTk.PhotoImage(self.setting_dark)
 
-        img = Image.open('images\HEAD.png')
-        # img=img.resize((200,100),Image.ANTIALIAS)
-        img = ImageTk.PhotoImage(img)
+        label = Image.open('images/head.png')
+        # label = label.resize((402, 100), Image.Resampling.LANCZOS)
+        label = ImageTk.PhotoImage(label)
 
-        head = tk.Label(self.root, image=img, bd=0, bg=bg)
+        top_frame = tk.Frame(self.root, bg=self.BG)
+        top_frame.pack(fill="x")
+
+        sett = tk.Button(top_frame, image=self.setting, bd=0, bg=self.BG, cursor="hand2", activebackground=self.BG)
+        sett.pack(side="right")
+        sett.bind("<Enter>", self.on_hover)
+        sett.bind("<Leave>", self.off_hover)
+
+        head = tk.Label(self.root, image=label, bd=0, bg=self.BG)
         head.pack()
 
-        f = tk.Frame(self.root, bg=bg)
+        f = tk.Frame(self.root, bg=self.BG)
         f.pack(pady=15)
         self.root.bind("<KeyRelease>", self.key_press)
 
         self.b_row1 = self.b_row2 = self.b_row3 = self.b_row4 = self.b_row5 = self.b_row6 = []
         self.buttons = []
 
-        f1 = tk.Frame(f, bg=bg)
-        f2 = tk.Frame(f, bg=bg)
-        f3 = tk.Frame(f, bg=bg)
-        f4 = tk.Frame(f, bg=bg)
-        f5 = tk.Frame(f, bg=bg)
-        f6 = tk.Frame(f, bg=bg)
-        self.button_frames = [f1,f2,f3,f4,f5,f6]
+        f1 = tk.Frame(f, bg=self.BG)
+        f2 = tk.Frame(f, bg=self.BG)
+        f3 = tk.Frame(f, bg=self.BG)
+        f4 = tk.Frame(f, bg=self.BG)
+        f5 = tk.Frame(f, bg=self.BG)
+        f6 = tk.Frame(f, bg=self.BG)
+        self.button_frames = [f1, f2, f3, f4, f5, f6]
 
         self.current_B_row = 0
         self.current_b = 0
@@ -55,15 +69,14 @@ class Wordle:
             row_btn = []
             self.button_frames[i].pack(pady=4)
             for j in range(5):
+                container = tk.Frame(self.button_frames[i], highlightbackground="#b0b0b0", highlightthickness=1, bd=0)
+                container.pack(side="left", padx=4)
 
-                container = tk.Frame(self.button_frames[i], highlightbackground = "#b0b0b0",highlightthickness = 1, bd=0)
-                container.pack(side="left",padx=4)
-
-                b = tk.Button(container,text="",relief="flat", fg="white",bd=2, font="lucida 18", bg=bg, width=3, height=1)
+                b = tk.Button(container, text="", relief="flat", fg="white", bd=2, font="lucida 18", bg=self.BG,
+                              width=3, height=1)
                 b.pack()
 
                 row_btn.append(b)
-
             self.buttons.append(row_btn)
 
         self.root.mainloop()
@@ -81,7 +94,7 @@ class Wordle:
                 self.current_b = 4
 
                 characters = list(self.guess)
-                characters[self.current_b]=""
+                characters[self.current_b] = ""
                 self.guess = "".join(characters)
 
             self.buttons[self.current_B_row][self.current_b]["text"] = key.upper()
@@ -95,7 +108,7 @@ class Wordle:
             self.current_b -= 1
             self.guess = self.guess[0: self.current_b]
             self.buttons[self.current_B_row][self.current_b]["text"] = ""
-            print("word = ",self.guess)
+            print("word = ", self.guess)
 
     def check_for_match(self):
         if len(self.guess) == 5:
@@ -105,15 +118,17 @@ class Wordle:
                 for button in self.buttons[self.current_B_row]:
                     button["bg"] = "green"
                 self.won = True
+                self.score = self.MAX_SCORE - 2 * (self.guess_count - 1)
                 print("You won !!!")
-                self.reset()
+                self.show_popup()
             else:
                 if self.guess_count == 6:
                     print("You Lost !!!")
+                    self.show_popup()
                     return
                 for i in range(5):
                     if self.word[i] == self.guess[i]:
-                        self.buttons[self.current_B_row][i]['bg']="green"
+                        self.buttons[self.current_B_row][i]['bg'] = "green"
 
                         characters = list(self.guess)
 
@@ -140,16 +155,62 @@ class Wordle:
             self.current_B_row += 1
             self.guess = ""
 
-    def reset(self):
-        self.show_popup()
+    def reset(self, popup=None):
+        for buttons_list in self.buttons:
+            for button in buttons_list:
+                button["text"] = ""
+                button["bg"] = self.BG
+
+        self.current_b = self.current_B_row = 0
+        self.won = False
+        self.guess_count = 0
+        self.score = 0
+        self.guess = ""
+
+        self.root.attributes('-disabled', False)
+        self.root.focus_get()
+        if popup:
+            popup.destroy()
 
     def show_popup(self):
         popup = tk.Toplevel()
-        popup.geometry("200x200+500+160")
-        popup.configure(background="grey")
+        popup.geometry("450x250+500+160")
+        popup.configure(background="black")
+        popup.focus_set()
 
+        status = "You Lost :("
 
+        if self.won:
+            status = "Yow Won !!!"
 
+        status_label = tk.Label(popup, text=status, font="lucida 20 bold", fg="green", bg="black")
+        status_label.pack(pady=10)
+
+        score_label = tk.Label(popup, text=f"Score : {self.score}", font="lucida 15 bold", fg="white", bg="black")
+        score_label.pack(pady=4)
+
+        high_score_label = tk.Label(popup, text="High Score : 25", font="lucida 15 bold", fg="white", bg="black")
+        high_score_label.pack(pady=4)
+
+        button = tk.Button(popup, text="Okay", font="lucida 12 bold", fg="red",cursor="hand2",
+                           bg="black", padx=10, command=lambda: self.reset(popup))
+        button.pack(pady=4)
+
+        # disable the main window, will get enabled only when popup is closed
+        self.root.attributes('-disabled', True)
+
+        def close():
+            self.reset(popup)
+
+        popup.protocol("WM_DELETE_WINDOW", close)
+
+    def on_hover(self, e):
+        widget = e.widget
+        widget["image"] = self.setting_dark
+
+    def off_hover(self, e):
+        widget = e.widget
+        widget["image"] = self.setting
 
 
 if __name__ == '__main__':
