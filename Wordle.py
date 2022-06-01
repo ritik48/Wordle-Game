@@ -1,6 +1,7 @@
 import tkinter as tk
 from PIL import Image, ImageTk
 import ctypes
+import words_api
 
 ctypes.windll.shcore.SetProcessDpiAwareness(1)
 
@@ -17,12 +18,13 @@ class Wordle:
         # bg="white"
         self.root.configure(background=self.BG)
 
-        self.word = "NEONS"
         self.guess = ""
         self.won = False
         self.guess_count = 0
-
         self.score = 0
+        self.word_size = 5
+
+        self.word_api = words_api.Words(self.word_size)
 
         self.setting = Image.open('images/setting.png')
         self.setting = self.setting.resize((40, 40), Image.Resampling.LANCZOS)
@@ -69,12 +71,9 @@ class Wordle:
             row_btn = []
             self.button_frames[i].pack(pady=4)
             for j in range(5):
-                container = tk.Frame(self.button_frames[i], highlightbackground="#b0b0b0", highlightthickness=1, bd=0)
-                container.pack(side="left", padx=4)
-
-                b = tk.Button(container, text="", relief="flat", fg="white", bd=2, font="lucida 18", bg=self.BG,
-                              width=3, height=1)
-                b.pack()
+                b = tk.Button(self.button_frames[i], text="", fg="white", bd=2,
+                              font="lucida 18", bg=self.BG, width=3, height=1)
+                b.pack(side="left", padx=2)
 
                 row_btn.append(b)
             self.buttons.append(row_btn)
@@ -114,7 +113,7 @@ class Wordle:
         if len(self.guess) == 5:
             self.guess_count += 1
 
-            if self.guess == self.word:
+            if self.word_api.is_valid_guess(self.guess):
                 for button in self.buttons[self.current_B_row]:
                     button["bg"] = "green"
                 self.won = True
@@ -123,34 +122,36 @@ class Wordle:
                 self.show_popup()
             else:
                 if self.guess_count == 6:
+                    self.word_api.display_right_word()
                     print("You Lost !!!")
                     self.show_popup()
                     return
                 for i in range(5):
-                    if self.word[i] == self.guess[i]:
+                    if self.word_api.is_at_right_position(i, self.guess[i]):
                         self.buttons[self.current_B_row][i]['bg'] = "green"
 
                         characters = list(self.guess)
 
                         for index, char in enumerate(characters):
-                            if char == self.word[i]:
+                            if self.word_api.is_at_right_position(i, char):
                                 characters[index] = '/'
 
                         self.guess = "".join(characters)
                         print(self.guess)
 
-                    elif self.guess[i] in self.word:
+                    elif self.word_api.is_in_word(self.guess[i]):
                         self.buttons[self.current_B_row][i]['bg'] = "yellow"
 
                         characters = list(self.guess)
 
                         for index, char in enumerate(characters):
-                            if char == self.guess[i]:
+                            if char == self.guess[i] and index != i:
                                 characters[index] = '/'
+                            # if self.word_api.is_at_right_position(i, char):
+                            #     characters[index] = '/'
 
                         self.guess = "".join(characters)
                         print(self.guess)
-
             self.current_b = 0
             self.current_B_row += 1
             self.guess = ""
@@ -181,9 +182,9 @@ class Wordle:
         status = "You Lost :("
 
         if self.won:
-            status = "Yow Won !!!"
+            status = "You Won !!!"
 
-        status_label = tk.Label(popup, text=status, font="lucida 20 bold", fg="green", bg="black")
+        status_label = tk.Label(popup, text=status, font="cambria 20 bold", fg="#14f41f", bg="black")
         status_label.pack(pady=10)
 
         score_label = tk.Label(popup, text=f"Score : {self.score}", font="lucida 15 bold", fg="white", bg="black")
@@ -192,8 +193,8 @@ class Wordle:
         high_score_label = tk.Label(popup, text="High Score : 25", font="lucida 15 bold", fg="white", bg="black")
         high_score_label.pack(pady=4)
 
-        button = tk.Button(popup, text="Okay", font="lucida 12 bold", fg="red",cursor="hand2",
-                           bg="black", padx=10, command=lambda: self.reset(popup))
+        button = tk.Button(popup, text="Okay", font="lucida 12 bold", fg="#00d0ff",cursor="hand2",
+                           bg="#252525", padx=10, command=lambda: self.reset(popup))
         button.pack(pady=4)
 
         # disable the main window, will get enabled only when popup is closed
