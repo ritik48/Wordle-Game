@@ -42,11 +42,10 @@ class Words:
         return False
 
     def select_word(self):
-        # self.word = random.choice(self.words_list).upper()
-        # while self.word in self.used_words:
-        #     self.word = random.choice(self.words_list).upper()
-        # self.used_words.append(self.word)
-        self.word = "ELITE"
+        self.word = random.choice(self.words_list).upper()
+        while self.word in self.used_words:
+            self.word = random.choice(self.words_list).upper()
+        self.used_words.append(self.word)
 
     def display_right_word(self):
         print("Right word was : ",self.word)
