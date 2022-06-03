@@ -6,6 +6,16 @@ import words_api
 ctypes.windll.shcore.SetProcessDpiAwareness(1)
 
 
+def on_hover(e, color):
+    button = e.widget
+    button["bg"] = color
+
+
+def off_hover(e, color):
+    button = e.widget
+    button["bg"] = color
+
+
 class Wordle:
     FIRST_RIGHT = 10
     BG = "#171717"
@@ -78,6 +88,38 @@ class Wordle:
                 row_btn.append(b)
             self.buttons.append(row_btn)
 
+        keyboard_frame = tk.Frame(self.root,bg=self.BG)
+        keyboard_frame.pack(pady=5)
+
+        c = 65
+
+        f1 = tk.Frame(keyboard_frame,bg=self.BG)
+        f1.pack(side="top",pady=2)
+        f2 = tk.Frame(keyboard_frame,bg=self.BG)
+        f2.pack(side="top",pady=2)
+        f3 = tk.Frame(keyboard_frame,bg=self.BG)
+        f3.pack(side="top",pady=2)
+
+        f = [f1, f2, f3]
+        step = 6
+
+        index = 0
+        for i in range(3):
+            for _ in range(step):
+                b = tk.Button(f[index], text=chr(c), font="cambria 13 bold", bg=self.BG, fg="#ff9c45", cursor="hand2")
+                b.pack(side="left", padx=2)
+                b.bind("<Enter>", lambda e:on_hover(e, "#575656"))
+                b.bind("<Leave>", lambda e:off_hover(e, self.BG))
+                c += 1
+            if i == 0:
+                b = tk.Button(f[index], text="Enter", font="cambria 13 bold", bg=self.BG, fg="#ff9c45", cursor="hand2")
+                b.pack(side="left", padx=2)
+                b.bind("<Enter>", lambda e: on_hover(e, "#575656"))
+                b.bind("<Leave>", lambda e: off_hover(e, self.BG))
+
+            index += 1
+            step = 10
+
         self.root.mainloop()
 
     def key_press(self, e):
@@ -117,12 +159,12 @@ class Wordle:
                 for button in self.buttons[self.current_B_row]:
                     button["bg"] = "green"
                 self.won = True
-                self.score = self.MAX_SCORE - 2 * (self.guess_count - 1)
+                self.score += self.MAX_SCORE - 2 * (self.guess_count - 1)
                 print("You won !!!")
+                self.word_api.select_word()
                 self.show_popup()
             else:
                 if self.guess_count == 6:
-                    self.word_api.display_right_word()
                     print("You Lost !!!")
                     self.show_popup()
                     return
@@ -165,7 +207,6 @@ class Wordle:
         self.current_b = self.current_B_row = 0
         self.won = False
         self.guess_count = 0
-        self.score = 0
         self.guess = ""
 
         self.root.attributes('-disabled', False)
@@ -186,6 +227,10 @@ class Wordle:
 
         status_label = tk.Label(popup, text=status, font="cambria 20 bold", fg="#14f41f", bg="black")
         status_label.pack(pady=10)
+
+        if not self.won:
+            right_word = tk.Label(popup, text=f"The word was {self.word_api.word}", font="cambria 15 bold", fg="#14f41f", bg="black")
+            right_word.pack(pady=3)
 
         score_label = tk.Label(popup, text=f"Score : {self.score}", font="lucida 15 bold", fg="white", bg="black")
         score_label.pack(pady=4)
