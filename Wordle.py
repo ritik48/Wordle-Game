@@ -108,41 +108,67 @@ class Wordle:
             for _ in range(step):
                 b = tk.Button(f[index], text=chr(c), font="cambria 13 bold", bg=self.BG, fg="#ff9c45", cursor="hand2")
                 b.pack(side="left", padx=2)
+                b.bind("<Button-1>",lambda e:self.key_press(keyboard=e))
                 b.bind("<Enter>", lambda e:on_hover(e, "#575656"))
                 b.bind("<Leave>", lambda e:off_hover(e, self.BG))
                 c += 1
             if i == 0:
                 b = tk.Button(f[index], text="Enter", font="cambria 13 bold", bg=self.BG, fg="#ff9c45", cursor="hand2")
                 b.pack(side="left", padx=2)
+                b.bind("<Button-1>", lambda e: self.key_press(keyboard=e))
                 b.bind("<Enter>", lambda e: on_hover(e, "#575656"))
                 b.bind("<Leave>", lambda e: off_hover(e, self.BG))
-
+            if i == 0:
+                b = tk.Button(f[index], text="<--", font="cambria 13 bold", bg=self.BG, fg="#ff9c45", cursor="hand2")
+                b.pack(side="left", padx=2)
+                b.bind("<Button-1>", lambda e: self.key_press(keyboard=e))
+                b.bind("<Enter>", lambda e: on_hover(e, "#575656"))
+                b.bind("<Leave>", lambda e: off_hover(e, self.BG))
             index += 1
             step = 10
 
         self.root.mainloop()
 
-    def key_press(self, e):
-        if e.keysym == "BackSpace":
-            self.erase_character()
+    def key_press(self, e=None, keyboard=None):
+        if e:
+            if e.keysym == "BackSpace":
+                self.erase_character()
 
-        elif e.keysym == "Return":
-            self.check_for_match()
+            elif e.keysym == "Return":
+                self.check_for_match()
 
-        elif 65 <= e.keycode <= 90:
-            key = e.char
-            if self.current_b == 5:
-                self.current_b = 4
+            elif 65 <= e.keycode <= 90:
+                key = e.char
+                if self.current_b == 5:
+                    self.current_b = 4
 
-                characters = list(self.guess)
-                characters[self.current_b] = ""
-                self.guess = "".join(characters)
+                    characters = list(self.guess)
+                    characters[self.current_b] = ""
+                    self.guess = "".join(characters)
 
-            self.buttons[self.current_B_row][self.current_b]["text"] = key.upper()
-            self.guess += key.upper()
-            self.current_b += 1
+                self.buttons[self.current_B_row][self.current_b]["text"] = key.upper()
+                self.guess += key.upper()
+                self.current_b += 1
+            else:
+                print(e.keysym)
         else:
-            print(e.keysym)
+            print("yes")
+            key_press = keyboard.widget
+            if key_press['text'] == 'Enter':
+                self.check_for_match()
+            elif key_press['text'] == '<--':
+                self.erase_character()
+            else:
+                if self.current_b == 5:
+                    self.current_b = 4
+
+                    characters = list(self.guess)
+                    characters[self.current_b] = ""
+                    self.guess = "".join(characters)
+
+                self.buttons[self.current_B_row][self.current_b]["text"] = key_press['text']
+                self.guess += key_press['text']
+                self.current_b += 1
 
     def erase_character(self):
         if self.current_b > 0:
@@ -167,6 +193,7 @@ class Wordle:
                 if self.guess_count == 6:
                     print("You Lost !!!")
                     self.show_popup()
+                    self.word_api.select_word()
                     return
                 for i in range(5):
                     if self.word_api.is_at_right_position(i, self.guess[i]):
@@ -179,7 +206,6 @@ class Wordle:
                                 characters[index] = '/'
 
                         self.guess = "".join(characters)
-                        print(self.guess)
 
                     elif self.word_api.is_in_word(self.guess[i]):
                         self.buttons[self.current_B_row][i]['bg'] = "yellow"
@@ -193,7 +219,7 @@ class Wordle:
                             #     characters[index] = '/'
 
                         self.guess = "".join(characters)
-                        print(self.guess)
+
             self.current_b = 0
             self.current_B_row += 1
             self.guess = ""

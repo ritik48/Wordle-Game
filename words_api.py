@@ -45,12 +45,8 @@ class Words:
         self.word = random.choice(self.words_list).upper()
         while self.word in self.used_words:
             self.word = random.choice(self.words_list).upper()
+        print(self.word)
         self.used_words.append(self.word)
 
     def display_right_word(self):
-        print("Right word was : ",self.word)
-
-
-
-
-
+        print("Right word was : ", self.word)
