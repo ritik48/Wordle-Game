@@ -2,6 +2,9 @@ import tkinter as tk
 from PIL import Image, ImageTk
 import ctypes
 import words_api
+import settings as st
+import os
+import sqlite3
 
 ctypes.windll.shcore.SetProcessDpiAwareness(1)
 
@@ -22,9 +25,10 @@ class Wordle:
         self.won = False
         self.guess_count = 0
         self.score = 0
-        self.word_size = 4
-
-        self.word_api = words_api.Words(self.word_size)
+        self.word_size = 5
+        self.high_score = 0
+        self.word_api = None
+        self.get_from_db()
 
         self.setting = Image.open('images/setting.png')
         self.setting = self.setting.resize((40, 40), Image.Resampling.LANCZOS)
@@ -41,7 +45,7 @@ class Wordle:
         top_frame = tk.Frame(self.root, bg=self.BG)
         top_frame.pack(fill="x")
 
-        sett = tk.Button(top_frame, image=self.setting, bd=0, bg=self.BG, cursor="hand2", activebackground=self.BG)
+        sett = tk.Button(top_frame, image=self.setting,command=self.open_setting, bd=0, bg=self.BG, cursor="hand2", activebackground=self.BG)
         sett.pack(side="right")
         sett.bind("<Enter>", self.on_hover)
         sett.bind("<Leave>", self.off_hover)
@@ -49,34 +53,28 @@ class Wordle:
         head = tk.Label(self.root, image=label, bd=0, bg=self.BG)
         head.pack()
 
-        f = tk.Frame(self.root, bg=self.BG)
-        f.pack(pady=15)
-        self.root.bind("<KeyRelease>", self.key_press)
+        # word buttons
+
+        main_btn_frame = tk.Frame(self.root, bg=self.BG)
+        main_btn_frame.pack(pady=15)
+
+        f1 = tk.Frame(main_btn_frame, bg=self.BG)
+        f2 = tk.Frame(main_btn_frame, bg=self.BG)
+        f3 = tk.Frame(main_btn_frame, bg=self.BG)
+        f4 = tk.Frame(main_btn_frame, bg=self.BG)
+        f5 = tk.Frame(main_btn_frame, bg=self.BG)
+        f6 = tk.Frame(main_btn_frame, bg=self.BG)
+        self.button_frames = [f1, f2, f3, f4, f5, f6]
 
         self.b_row1 = self.b_row2 = self.b_row3 = self.b_row4 = self.b_row5 = self.b_row6 = []
         self.buttons = []
 
-        f1 = tk.Frame(f, bg=self.BG)
-        f2 = tk.Frame(f, bg=self.BG)
-        f3 = tk.Frame(f, bg=self.BG)
-        f4 = tk.Frame(f, bg=self.BG)
-        f5 = tk.Frame(f, bg=self.BG)
-        f6 = tk.Frame(f, bg=self.BG)
-        self.button_frames = [f1, f2, f3, f4, f5, f6]
-
         self.current_B_row = 0
         self.current_b = 0
 
-        for i in range(6):
-            row_btn = []
-            self.button_frames[i].pack(pady=4)
-            for j in range(self.word_size):
-                b = tk.Button(self.button_frames[i], text="", fg="white", bd=2,
-                              font="lucida 18", bg=self.BG, width=3, height=1)
-                b.pack(side="left", padx=2)
+        self.show_buttons()
 
-                row_btn.append(b)
-            self.buttons.append(row_btn)
+        # keypad buttons
 
         keyboard_frame = tk.Frame(self.root, bg=self.BG)
         keyboard_frame.pack(pady=5)
@@ -127,7 +125,33 @@ class Wordle:
             index += 1
             step = 10
 
+        self.root.bind("<KeyRelease>", self.key_press)
+
         self.root.mainloop()
+
+    def show_buttons(self):
+        if self.buttons:
+            for b in self.buttons:
+                if b:
+                    for i in b:
+                        i.destroy()
+
+        self.b_row1 = self.b_row2 = self.b_row3 = self.b_row4 = self.b_row5 = self.b_row6 = []
+        self.buttons = []
+
+        self.current_B_row = 0
+        self.current_b = 0
+
+        for i in range(6):
+            row_btn = []
+            self.button_frames[i].pack(pady=4)
+            for j in range(self.word_size):
+                b = tk.Button(self.button_frames[i], text="", fg="white", bd=2,
+                              font="lucida 18", bg=self.BG, width=3, height=1)
+                b.pack(side="left", padx=2)
+
+                row_btn.append(b)
+            self.buttons.append(row_btn)
 
     def key_press(self, e=None, keyboard=None):
         if e:
@@ -189,6 +213,10 @@ class Wordle:
 
                 self.won = True
                 self.score += self.MAX_SCORE - 2 * (self.guess_count - 1)
+
+                if self.score > self.high_score:
+                    self.update_high_score()
+
                 print("You won !!!")
                 self.word_api.select_word()
                 self.show_popup()
@@ -285,7 +313,7 @@ class Wordle:
         score_label = tk.Label(popup, text=f"Score : {self.score}", font="lucida 15 bold", fg="white", bg="black")
         score_label.pack(pady=4)
 
-        high_score_label = tk.Label(popup, text="High Score : 25", font="lucida 15 bold", fg="white", bg="black")
+        high_score_label = tk.Label(popup, text=f"High Score : {self.high_score}", font="lucida 15 bold", fg="white", bg="black")
         high_score_label.pack(pady=4)
 
         button = tk.Button(popup, text="Okay", font="lucida 12 bold", fg="#00d0ff", cursor="hand2",
@@ -316,6 +344,49 @@ class Wordle:
             if on_hover_color:
                 self.keypad_buttons[btn_frame_index][btn_index].bind("<Enter>", lambda e: on_hover(e, on_hover_color))
                 self.keypad_buttons[btn_frame_index][btn_index].bind("<Leave>", lambda e: off_hover(e, off_hover_color))
+
+    def get_from_db(self):
+        if not os.path.exists("settings.db"):
+            connection = sqlite3.connect("settings.db")
+            cursor = connection.cursor()
+            cursor.execute("CREATE TABLE info(id integer, word_length integer,high_score integer)")
+            cursor.execute('INSERT INTO info VALUES(?,?,?)', (0, 5, 0))
+
+            self.word_api = words_api.Words(self.word_size)
+
+            connection.commit()
+            cursor.execute("SELECT * FROM info")
+            connection.close()
+        else:
+            connection = sqlite3.connect("settings.db")
+            cursor = connection.cursor()
+
+            cursor.execute("SELECT * FROM info")
+
+            data = cursor.fetchall()
+            self.word_size = data[0][1]
+            self.high_score = data[0][2]
+
+            print("high = ",self.high_score)
+            print("word size = ",self.word_size)
+
+            self.word_api = words_api.Words(self.word_size)
+
+            connection.close()
+
+    def update_high_score(self):
+        connection = sqlite3.connect("settings.db")
+        cursor = connection.cursor()
+
+        self.high_score = self.score
+        print("update score = ",self.high_score)
+        cursor.execute(f"UPDATE info SET high_score={self.score} WHERE id=0")
+        connection.commit()
+
+        connection.close()
+
+    def open_setting(self):
+        setting = st.Settings(self)
 
     def on_hover(self, e):
         widget = e.widget
