@@ -22,7 +22,7 @@ class Wordle:
         self.won = False
         self.guess_count = 0
         self.score = 0
-        self.word_size = 5
+        self.word_size = 4
 
         self.word_api = words_api.Words(self.word_size)
 
@@ -70,7 +70,7 @@ class Wordle:
         for i in range(6):
             row_btn = []
             self.button_frames[i].pack(pady=4)
-            for j in range(5):
+            for j in range(self.word_size):
                 b = tk.Button(self.button_frames[i], text="", fg="white", bd=2,
                               font="lucida 18", bg=self.BG, width=3, height=1)
                 b.pack(side="left", padx=2)
@@ -139,8 +139,8 @@ class Wordle:
 
             elif 65 <= e.keycode <= 90:
                 key = e.char
-                if self.current_b == 5:
-                    self.current_b = 4
+                if self.current_b == self.word_size:
+                    self.current_b = self.word_size - 1
 
                     characters = list(self.guess)
                     characters[self.current_b] = ""
@@ -158,8 +158,8 @@ class Wordle:
             elif key_press['text'] == '←':
                 self.erase_character()
             else:
-                if self.current_b == 5:
-                    self.current_b = 4
+                if self.current_b == self.word_size:
+                    self.current_b = self.word_size - 1
 
                     characters = list(self.guess)
                     characters[self.current_b] = ""
@@ -177,7 +177,7 @@ class Wordle:
             print("word = ", self.guess)
 
     def check_for_match(self):
-        if len(self.guess) == 5:
+        if len(self.guess) == self.word_size:
             self.guess_count += 1
 
             if self.word_api.is_valid_guess(self.guess):
@@ -198,7 +198,7 @@ class Wordle:
                     self.show_popup()
                     self.word_api.select_word()
                     return
-                for i in range(5):
+                for i in range(self.word_size):
                     if self.word_api.is_at_right_position(i, self.guess[i]):
                         self.buttons[self.current_B_row][i]['bg'] = "green"
 
