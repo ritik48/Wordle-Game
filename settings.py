@@ -42,7 +42,7 @@ class Settings:
     def change_db(self):
 
         if not self.high_score.get() or not self.word_length.get():
-            messagebox.showinfo("Error !!!", f"Word Length and High Score can't be empty.")
+            messagebox.showinfo("Error !!!", f"Word Length and High Score can't be empty.",parent=self.window)
             self.window.focus_force()
             return
 
