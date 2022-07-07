@@ -16,10 +16,17 @@ class Wordle:
 
     def __init__(self):
         self.root = tk.Tk()
-        self.root.geometry("600x800+400+150")
 
-        # bg="white"
+        self.width = 600
+        self.height = 800
+        self.x_co = int(self.root.winfo_screenwidth() / 2) - int(self.width / 2)
+        self.y_co = 50
+
+        self.root.geometry(f"{self.width}x{self.height}+{self.x_co}+{self.y_co}")
+
         self.root.configure(background=self.BG)
+        self.root.title("Wordle")
+        self.root.wm_iconbitmap('images/icon.ico')
 
         self.guess = ""
         self.won = False
@@ -125,6 +132,10 @@ class Wordle:
             index += 1
             step = 10
 
+        self.status_bar = tk.Label(self.root, text=f"Score : {self.score}",font="cambria 10 bold",
+                                   anchor="w",padx=10,background="#242424",fg="white")
+        self.status_bar.pack(fill='x', side="bottom")
+
         self.root.bind("<KeyRelease>", self.key_press)
 
         self.root.mainloop()
@@ -214,6 +225,8 @@ class Wordle:
                 self.won = True
                 self.score += self.MAX_SCORE - 2 * (self.guess_count - 1)
 
+                self.status_bar["text"] = f"Score : {self.score}"
+
                 if self.score > self.high_score:
                     self.update_high_score()
 
@@ -282,6 +295,11 @@ class Wordle:
                 button.bind("<Leave>", lambda e: off_hover(e, self.BG))
 
         self.current_b = self.current_B_row = 0
+        if not self.won:
+            self.score = 0
+
+        self.status_bar["text"] = f"Score : {self.score}"
+
         self.won = False
         self.guess_count = 0
         self.guess = ""
@@ -293,9 +311,15 @@ class Wordle:
 
     def show_popup(self):
         popup = tk.Toplevel()
-        popup.geometry("450x250+500+160")
+        popup.title("Game Over")
+
+        x_co = int(self.width / 2 - (450 / 2)) + self.x_co
+        y_co = self.y_co + int(self.height / 2 - (250 / 2))
+
+        popup.geometry(f"450x250+{x_co}+{y_co}")
         popup.configure(background="black")
-        popup.focus_set()
+        popup.wm_iconbitmap('images/icon.ico')
+        popup.focus_force()
 
         status = "You Lost :("
 
