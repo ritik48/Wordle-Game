@@ -114,6 +114,8 @@ class Settings:
 
         self.functions.get_from_db()
         self.functions.show_buttons()
+        self.functions.reset(keypad=True)
+
 
         self.root.attributes('-disabled', False)
 

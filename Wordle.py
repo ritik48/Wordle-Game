@@ -282,11 +282,12 @@ class Wordle:
             self.current_B_row += 1
             self.guess = ""
 
-    def reset(self, popup=None):
-        for buttons_list in self.buttons:
-            for button in buttons_list:
-                button["text"] = ""
-                button["bg"] = self.BG
+    def reset(self, popup=None, keypad=None):
+        if not keypad:
+            for buttons_list in self.buttons:
+                for button in buttons_list:
+                    button["text"] = ""
+                    button["bg"] = self.BG
 
         for buttons_list in self.keypad_buttons:
             for button in buttons_list:
