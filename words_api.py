@@ -21,7 +21,7 @@ class Words:
         else:
             file_name = 'six_letters'
 
-        with open(f"C://Users//hp//Desktop//word_files//{file_name}.txt", 'r') as file:
+        with open(f"word_files/{file_name}.txt", 'r') as file:
             self.words_list = file.readlines()
 
         self.words_list = [word.strip('\n') for word in self.words_list]
@@ -45,7 +45,7 @@ class Words:
         self.word = random.choice(self.words_list).upper()
         while self.word in self.used_words:
             self.word = random.choice(self.words_list).upper()
-        print(self.word)
+
         self.used_words.append(self.word)
 
     def display_right_word(self):

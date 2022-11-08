@@ -392,8 +392,7 @@ class Wordle:
             self.word_size = data[0][1]
             self.high_score = data[0][2]
 
-            print("high = ",self.high_score)
-            print("word size = ",self.word_size)
+            # print("high = ",self.high_score)
 
             self.word_api = words_api.Words(self.word_size)
 
