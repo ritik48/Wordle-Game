@@ -182,6 +182,7 @@ class Wordle:
                     self.guess = "".join(characters)
 
                 self.buttons[self.current_B_row][self.current_b]["text"] = key.upper()
+                self.buttons[self.current_B_row][self.current_b]['bg'] = "#3d3d3d"
                 self.guess += key.upper()
                 self.current_b += 1
             else:
@@ -208,8 +209,9 @@ class Wordle:
         if self.current_b > 0:
             self.current_b -= 1
             self.guess = self.guess[0: self.current_b]
+
+            self.buttons[self.current_B_row][self.current_b]["bg"] = self.BG
             self.buttons[self.current_B_row][self.current_b]["text"] = ""
-            print("word = ", self.guess)
 
     def check_for_match(self):
         if len(self.guess) == self.word_size:
@@ -277,6 +279,7 @@ class Wordle:
                             #     characters[index] = '/'
 
                         self.guess = "".join(characters)
+
 
             self.current_b = 0
             self.current_B_row += 1
