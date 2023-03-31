@@ -279,7 +279,8 @@ class Wordle:
                             #     characters[index] = '/'
 
                         self.guess = "".join(characters)
-
+                    else:
+                        self.change_keypad_color("#4d4a4a", self.guess[i], "#9ba128", "#d0d925")
 
             self.current_b = 0
             self.current_B_row += 1
