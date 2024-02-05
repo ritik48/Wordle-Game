@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter.messagebox import showerror
 from PIL import Image, ImageTk
 import ctypes
 import words_api
@@ -214,7 +215,11 @@ class Wordle:
             self.buttons[self.current_B_row][self.current_b]["text"] = ""
 
     def check_for_match(self):
-        if len(self.guess) == self.word_size:
+        words = words_api.Words(self.word_size)
+        if self.guess.lower() not in words.words_list:
+            print(showerror("Error", "Word not in the list"))
+            print("word not in the list")
+        elif len(self.guess) == self.word_size:
             self.guess_count += 1
 
             if self.word_api.is_valid_guess(self.guess):
