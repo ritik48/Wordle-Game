@@ -280,7 +280,7 @@ class Wordle:
 
                         self.guess = "".join(characters)
                     else:
-                        self.change_keypad_color("#4d4a4a", self.guess[i], "#9ba128", "#d0d925")
+                        self.change_keypad_color("#4d4a4a", self.guess[i], "#3d3b3b", "#4d4a4a")
 
             self.current_b = 0
             self.current_B_row += 1
