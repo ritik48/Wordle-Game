@@ -214,6 +214,7 @@ class Wordle:
             self.buttons[self.current_B_row][self.current_b]["text"] = ""
 
     def check_for_match(self):
+        print("guess = ", self.guess)
         if len(self.guess) == self.word_size:
             self.guess_count += 1
 
@@ -251,7 +252,7 @@ class Wordle:
                         """
                          if a character is present more than once in a word then we will only
                          change the color of, that comes first, That's why we are replacing the 
-                         duplicates with '/' so that the duplicates are not highlighted.
+                         duplicates with '/' so that the duplic+-ates are not highlighted.
                         """
                         characters = list(self.guess)
                         for index, char in enumerate(characters):
@@ -272,6 +273,7 @@ class Wordle:
                          duplicates with '/' so that the duplicates are not highlighted.
                         """
                         characters = list(self.guess)
+                        print(characters)
                         for index, char in enumerate(characters):
                             if char == self.guess[i] and index != i:
                                 characters[index] = '/'
@@ -368,6 +370,10 @@ class Wordle:
             else:
                 btn_frame_index = 2
                 btn_index = ord(char) - 81
+
+            if char == "/":
+                return
+
             self.keypad_buttons[btn_frame_index][btn_index]['bg'] = color
 
             if on_hover_color:
