@@ -11,7 +11,7 @@ ctypes.windll.shcore.SetProcessDpiAwareness(1)
 
 class Wordle:
     FIRST_RIGHT = 10
-    BG = "#171717"
+    BG = "black"
     MAX_SCORE = 12
 
     def __init__(self):
