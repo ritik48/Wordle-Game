@@ -125,11 +125,11 @@ class Settings:
     def change_value(self, value=None, change=None):
         if value == "length":
             if change == "decrease":
-                if 3 < self.length <= 5:
+                if 3 < self.length <= 6:
                     self.length -= 1
 
             elif change == "increase":
-                if 3 <= self.length < 5:
+                if 3 <= self.length < 6:
                     self.length += 1
 
             self.word_length["text"] = self.length
